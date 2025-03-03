@@ -8279,6 +8279,7 @@ __metadata:
     "@joplin/renderer": ~3.3
     "@joplin/tools": ~3.3
     "@joplin/utils": ~3.3
+    "@journeyapps/sqlcipher": 5.3.1
     "@playwright/test": 1.45.3
     "@sentry/electron": 4.24.0
     "@testing-library/react-hooks": 8.0.1
@@ -8604,6 +8605,7 @@ __metadata:
     "@joplin/turndown": ^4.0.79
     "@joplin/turndown-plugin-gfm": ^1.0.61
     "@joplin/utils": ~3.3
+    "@journeyapps/sqlcipher": 5.3.1
     "@testing-library/react-hooks": 8.0.1
     "@types/adm-zip": 0.5.7
     "@types/fs-extra": 11.0.4
@@ -8997,6 +8999,16 @@ __metadata:
     typescript: 5.4.5
   languageName: unknown
   linkType: soft
+
+"@journeyapps/sqlcipher@npm:5.3.1":
+  version: 5.3.1
+  resolution: "@journeyapps/sqlcipher@npm:5.3.1"
+  dependencies:
+    "@mapbox/node-pre-gyp": ^1.0.0
+    node-addon-api: ^3.0.0
+  checksum: 3e3dfeb85dffd1bab20f41cb6b38df1dc57baa33266293e55ad883d7d181294e45e8496cd888457689fa9e440d5629712c72124e05ae9ce00fe5175129e2c9db
+  languageName: node
+  linkType: hard
 
 "@jridgewell/gen-mapping@npm:^0.3.0":
   version: 0.3.3
@@ -35375,6 +35387,15 @@ __metadata:
   dependencies:
     node-gyp: latest
   checksum: 938922b3d7cb34ee137c5ec39df6289a3965e8cab9061c6848863324c21a778a81ae3bc955554c56b6b86962f6ccab2043dd5fa3f33deab633636bd28039333f
+  languageName: node
+  linkType: hard
+
+"node-addon-api@npm:^3.0.0":
+  version: 3.2.1
+  resolution: "node-addon-api@npm:3.2.1"
+  dependencies:
+    node-gyp: latest
+  checksum: 2369986bb0881ccd9ef6bacdf39550e07e089a9c8ede1cbc5fc7712d8e2faa4d50da0e487e333d4125f8c7a616c730131d1091676c9d499af1d74560756b4a18
   languageName: node
   linkType: hard
 

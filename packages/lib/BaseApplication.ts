@@ -14,7 +14,7 @@ import { createStore, applyMiddleware, Store } from 'redux';
 import { defaultState, stateUtils } from './reducer';
 import JoplinDatabase from './JoplinDatabase';
 import { cancelTimers as folderScreenUtilsCancelTimers, refreshFolders, scheduleRefreshFolders } from './folders-screen-utils';
-const { DatabaseDriverNode } = require('./database-driver-node.js');
+const { DatabaseDriverNode } = require('./database-driver-node-sqlcipher.js');
 import BaseModel from './BaseModel';
 import Folder from './models/Folder';
 import BaseItem from './models/BaseItem';

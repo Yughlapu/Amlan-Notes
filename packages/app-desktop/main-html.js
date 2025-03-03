@@ -29,6 +29,7 @@ const EncryptionService = require('@joplin/lib/services/e2ee/EncryptionService')
 const FileApiDriverLocal = require('@joplin/lib/file-api-driver-local').default;
 const React = require('react');
 const nodeSqlite = require('sqlite3');
+const nodeSqliteCipher = require('@journeyapps/sqlcipher');
 const initLib = require('@joplin/lib/initLib').default;
 const pdfJs = require('pdfjs-dist');
 require('@sentry/electron/renderer');
@@ -109,6 +110,7 @@ const main = async () => {
 		appVersion,
 		electronBridge: bridge(),
 		nodeSqlite,
+		nodeSqliteCipher,
 		pdfJs,
 	});
 

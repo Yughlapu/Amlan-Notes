@@ -76,6 +76,8 @@ let isTestingEnv_ = false;
 let react_: typeof React = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 let nodeSqlite_: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+let nodeSqliteCipher_: any = null;
 
 const shim = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
@@ -480,9 +482,19 @@ const shim = {
 		nodeSqlite_ = nodeSqlite;
 	},
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	setNodeSqliteCipher: (nodeSqlite: any) => {
+		nodeSqliteCipher_ = nodeSqlite;
+	},
+
 	nodeSqlite: () => {
 		if (!nodeSqlite_) throw new Error('Trying to access nodeSqlite before it has been set!!!');
 		return nodeSqlite_;
+	},
+
+	nodeSqliteCipher: () => {
+		if (!nodeSqliteCipher_) throw new Error('Trying to access nodeSqliteCipher before it has been set!!!');
+		return nodeSqliteCipher_;
 	},
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied

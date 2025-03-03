@@ -110,6 +110,8 @@ interface ShimInitOptions {
 	electronBridge: any;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
 	nodeSqlite: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
+	nodeSqliteCipher: any;
 	pdfJs: typeof pdfJsNamespace;
 }
 
@@ -122,6 +124,7 @@ function shimInit(options: ShimInitOptions = null) {
 		electronBridge: null,
 		nodeSqlite: null,
 		pdfJs: null,
+		nodeSqliteCipher: null,
 		...options,
 	};
 
@@ -131,6 +134,7 @@ function shimInit(options: ShimInitOptions = null) {
 	const pdfJs = options.pdfJs;
 
 	shim.setNodeSqlite(options.nodeSqlite);
+	shim.setNodeSqliteCipher(options.nodeSqliteCipher);
 
 	shim.fsDriver = () => {
 		throw new Error('Not implemented');
