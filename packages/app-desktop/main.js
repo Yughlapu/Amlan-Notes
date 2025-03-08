@@ -40,6 +40,7 @@ Logger.fsDriver_ = new FsDriverNode();
 const env = envFromArgs(process.argv);
 const profileFromArgs = getProfileFromArgs(process.argv);
 const isDebugMode = !!process.argv && process.argv.indexOf('--debug') >= 0;
+const isAltInstance = !!process.argv && process.argv.indexOf('--is-alt-instance') >= 0;
 
 // We initialize all these variables here because they are needed from the main process. They are
 // then passed to the renderer process via the bridge.
@@ -65,7 +66,7 @@ void registerCustomProtocols();
 
 const initialCallbackUrl = process.argv.find((arg) => isCallbackUrl(arg));
 
-const wrapper = new ElectronAppWrapper(electronApp, env, rootProfileDir, isDebugMode, initialCallbackUrl);
+const wrapper = new ElectronAppWrapper(electronApp, env, rootProfileDir, isDebugMode, initialCallbackUrl, isAltInstance);
 
 initBridge(wrapper, appId, appName, rootProfileDir, autoUploadCrashDumps);
 

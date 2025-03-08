@@ -13,6 +13,7 @@ export interface MatchedStartFlags {
 	logLevel?: LogLevel;
 	allowOverridingDnsResultOrder?: boolean;
 	devPlugins?: string[];
+	isAltInstance?: boolean;
 }
 
 // Handles the initial flags passed to main script and
@@ -177,6 +178,12 @@ const processStartFlags = async (argv: string[], setDefaults = true) => {
 		if (arg === '--updated') {
 			// Electron-specific flag - ignore it
 			// Allows to restart with the updated application after the update option is selected by the user
+			argv.splice(0, 1);
+			continue;
+		}
+
+		if (arg === '--is-alt-instance') {
+			matched.isAltInstance = true;
 			argv.splice(0, 1);
 			continue;
 		}

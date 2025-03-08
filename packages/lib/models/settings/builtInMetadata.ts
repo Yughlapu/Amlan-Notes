@@ -62,6 +62,16 @@ const builtInMetadata = (Setting: typeof SettingType) => {
 			type: SettingItemType.String,
 			public: false,
 		},
+
+		'isAltInstance': {
+			value: false,
+			type: SettingItemType.Bool,
+			public: false,
+			appTypes: [AppType.Desktop],
+			storage: SettingStorage.File,
+			isGlobal: true,
+		},
+
 		'editor.codeView': {
 			value: true,
 			type: SettingItemType.Bool,

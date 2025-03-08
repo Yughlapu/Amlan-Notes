@@ -687,7 +687,7 @@ export default class BaseApplication {
 		// https://immerjs.github.io/immer/docs/freezing
 		setAutoFreeze(initArgs.env === 'dev');
 
-		const { rootProfileDir, homeDir } = determineProfileAndBaseDir(options.rootProfileDir ?? initArgs.profileDir, appName);
+		const { rootProfileDir, homeDir } = determineProfileAndBaseDir(options.rootProfileDir ?? initArgs.profileDir, appName, initArgs.isAltInstance);
 		const { profileDir, profileConfig, isSubProfile } = await initProfile(rootProfileDir);
 		this.profileConfig_ = profileConfig;
 
@@ -805,6 +805,8 @@ export default class BaseApplication {
 				Setting.setValue('autoUpdateEnabled', false);
 				Setting.setValue('sync.interval', 3600);
 			}
+
+			Setting.setValue('isAltInstance', initArgs.isAltInstance);
 
 			Setting.setValue('firstStart', false);
 		} else {

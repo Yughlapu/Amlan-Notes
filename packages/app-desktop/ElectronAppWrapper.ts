@@ -57,14 +57,16 @@ export default class ElectronAppWrapper {
 	private updaterService_: AutoUpdaterService = null;
 	private customProtocolHandler_: CustomProtocolHandler = null;
 	private updatePollInterval_: ReturnType<typeof setTimeout>|null = null;
+	private isAltInstance_: boolean;
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
-	public constructor(electronApp: any, env: string, profilePath: string|null, isDebugMode: boolean, initialCallbackUrl: string) {
+	public constructor(electronApp: any, env: string, profilePath: string|null, isDebugMode: boolean, initialCallbackUrl: string, isAltInstance: boolean) {
 		this.electronApp_ = electronApp;
 		this.env_ = env;
 		this.isDebugMode_ = isDebugMode;
 		this.profilePath_ = profilePath;
 		this.initialCallbackUrl_ = initialCallbackUrl;
+		this.isAltInstance_ = isAltInstance;
 	}
 
 	public electronApp() {
@@ -85,6 +87,10 @@ export default class ElectronAppWrapper {
 
 	public activeWindow() {
 		return BrowserWindow.getFocusedWindow() ?? this.win_;
+	}
+
+	public isAltInstance() {
+		return this.isAltInstance_;
 	}
 
 	public windowById(joplinId: string) {
@@ -538,6 +544,7 @@ export default class ElectronAppWrapper {
 
 	public ensureSingleInstance() {
 		if (this.env_ === 'dev') return false;
+		if (this.isAltInstance_) return false;
 
 		const gotTheLock = this.electronApp_.requestSingleInstanceLock();
 

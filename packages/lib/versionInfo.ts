@@ -89,6 +89,7 @@ export default function versionInfo(packageInfo: PackageInfo, plugins: Plugins) 
 		_('Sync Version: %s', Setting.value('syncVersion')),
 		_('Profile Version: %s', reg.db().version()),
 		_('Keychain Supported: %s', keychainSupported ? _('Yes') : _('No')),
+		_('Is alternative instance: %s', Setting.value('isAltInstance') ? _('Yes') : _('No')),
 	];
 
 	if (gitInfo) {
