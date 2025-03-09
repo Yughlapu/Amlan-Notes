@@ -4,15 +4,12 @@ import AutoUpdaterService, { defaultUpdateInterval, initialUpdateStartup } from 
 import type ShimType from '@joplin/lib/shim';
 const shim: typeof ShimType = require('@joplin/lib/shim').default;
 import { isCallbackUrl } from '@joplin/lib/callbackUrlUtils';
-
-import { BrowserWindow, Tray, WebContents, screen } from 'electron';
+import { BrowserWindow, Tray, WebContents, screen, App, Event, dialog, ipcMain } from 'electron';
 import bridge from './bridge';
 const url = require('url');
 const path = require('path');
 const { dirname } = require('@joplin/lib/path-utils');
 const fs = require('fs-extra');
-
-import { dialog, ipcMain } from 'electron';
 import { _ } from '@joplin/lib/locale';
 import restartInSafeModeFromMain from './utils/restartInSafeModeFromMain';
 import handleCustomProtocols, { CustomProtocolHandler } from './utils/customProtocols/handleCustomProtocols';
@@ -36,8 +33,7 @@ interface SecondaryWindowData {
 
 export default class ElectronAppWrapper {
 	private logger_: Logger = null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
-	private electronApp_: any;
+	private electronApp_: App;
 	private env_: string;
 	private isDebugMode_: boolean;
 	private profilePath_: string;
@@ -48,8 +44,7 @@ export default class ElectronAppWrapper {
 	private secondaryWindows_: Map<SecondaryWindowId, SecondaryWindowData> = new Map();
 
 	private willQuitApp_ = false;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
-	private tray_: any = null;
+	private tray_: Tray = null;
 	private buildDir_: string = null;
 	private rendererProcessQuitReply_: RendererProcessQuitReply = null;
 
@@ -59,8 +54,7 @@ export default class ElectronAppWrapper {
 	private updatePollInterval_: ReturnType<typeof setTimeout>|null = null;
 	private isAltInstance_: boolean;
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
-	public constructor(electronApp: any, env: string, profilePath: string|null, isDebugMode: boolean, initialCallbackUrl: string, isAltInstance: boolean) {
+	public constructor(electronApp: App, env: string, profilePath: string|null, isDebugMode: boolean, initialCallbackUrl: string, isAltInstance: boolean) {
 		this.electronApp_ = electronApp;
 		this.env_ = env;
 		this.isDebugMode_ = isDebugMode;
@@ -555,8 +549,7 @@ export default class ElectronAppWrapper {
 		}
 
 		// Someone tried to open a second instance - focus our window instead
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Old code before rule was applied
-		this.electronApp_.on('second-instance', (_e: any, argv: string[]) => {
+		this.electronApp_.on('second-instance', (_event: Event, argv: string[], _workingDirectory: string) => {
 			const win = this.mainWindow();
 			if (!win) return;
 			if (win.isMinimized()) win.restore();
