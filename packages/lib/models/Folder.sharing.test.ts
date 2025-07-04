@@ -10,6 +10,16 @@ import { StateShare } from '../services/share/reducer';
 
 const testImagePath = `${supportDir}/photo.jpg`;
 
+const makeStateShares = (folderId: string, shareId = 'abcd1234'): StateShare[] => {
+	return [{
+		folder_id: folderId,
+		master_key_id: '',
+		id: shareId,
+		note_id: '',
+		type: 3,
+	}];
+};
+
 describe('models/Folder.sharing', () => {
 
 	beforeEach(async () => {
@@ -41,7 +51,7 @@ describe('models/Folder.sharing', () => {
 		]);
 
 		await Folder.save({ id: folder.id, share_id: 'abcd1234' });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder.id));
 
 		const allItems = await allNotesFolders();
 		for (const item of allItems) {
@@ -87,7 +97,7 @@ describe('models/Folder.sharing', () => {
 
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
 
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		folder1 = await Folder.loadByTitle('folder 1');
 		const folder2 = await Folder.loadByTitle('folder 2');
@@ -121,7 +131,7 @@ describe('models/Folder.sharing', () => {
 
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
 
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		folder1 = await Folder.loadByTitle('folder 1');
 		let folder2 = await Folder.loadByTitle('folder 2');
@@ -133,7 +143,7 @@ describe('models/Folder.sharing', () => {
 		// Move the folder outside the shared folder
 
 		await Folder.save({ id: folder2.id, parent_id: folder3.id });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 		folder2 = await Folder.loadByTitle('folder 2');
 		expect(folder2.share_id).toBe('');
 
@@ -141,7 +151,7 @@ describe('models/Folder.sharing', () => {
 
 		{
 			await Folder.save({ id: folder2.id, parent_id: folder1.id });
-			await Folder.updateAllShareIds(resourceService(), []);
+			await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 			folder2 = await Folder.loadByTitle('folder 2');
 			expect(folder2.share_id).toBe('abcd1234');
 		}
@@ -162,15 +172,7 @@ describe('models/Folder.sharing', () => {
 
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
 
-		const stateShares: StateShare[] = [
-			{
-				folder_id: folder1.id,
-				id: 'abcd1234',
-				master_key_id: '',
-				note_id: '',
-				type: 3,
-			},
-		];
+		const stateShares: StateShare[] = makeStateShares(folder1.id);
 
 		await Folder.updateAllShareIds(resourceService(), stateShares);
 
@@ -221,7 +223,7 @@ describe('models/Folder.sharing', () => {
 
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
 
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		const note1: NoteEntity = await Note.loadByTitle('note 1');
 		const note2: NoteEntity = await Note.loadByTitle('note 2');
@@ -251,7 +253,7 @@ describe('models/Folder.sharing', () => {
 		]);
 
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 		const note1: NoteEntity = await Note.loadByTitle('note 1');
 		const folder2: FolderEntity = await Folder.loadByTitle('folder 2');
 		expect(note1.share_id).toBe('abcd1234');
@@ -259,7 +261,7 @@ describe('models/Folder.sharing', () => {
 		// Move the note outside of the shared folder
 
 		await Note.save({ id: note1.id, parent_id: folder2.id });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		{
 			const note1: NoteEntity = await Note.loadByTitle('note 1');
@@ -269,7 +271,7 @@ describe('models/Folder.sharing', () => {
 		// Move the note back inside the shared folder
 
 		await Note.save({ id: note1.id, parent_id: folder1.id });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		{
 			const note1: NoteEntity = await Note.loadByTitle('note 1');
@@ -297,7 +299,7 @@ describe('models/Folder.sharing', () => {
 		]);
 
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		let note1: NoteEntity = await Note.loadByTitle('note 1');
 		let note2: NoteEntity = await Note.loadByTitle('note 2');
@@ -307,12 +309,53 @@ describe('models/Folder.sharing', () => {
 		expect(note2.share_id).toBe('abcd1234');
 
 		await Note.save({ id: note1.id, parent_id: folder2.id });
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
 		note1 = await Note.loadByTitle('note 1');
 		note2 = await Note.loadByTitle('note 2');
 		expect(note1.share_id).toBe('');
 		expect(note2.share_id).toBe('abcd1234');
+	}));
+
+	// TODO: also of folders
+	// TODO: also of resources
+
+	it('should clear the share ID of notes if that share no longer exists', (async () => {
+		const folder1 = await createFolderTree('', [
+			{
+				title: 'folder 1',
+				children: [
+					{
+						title: 'note 1',
+					},
+					{
+						title: 'note 2',
+					},
+				],
+			},
+			{
+				title: 'folder 2',
+				children: [],
+			},
+		]);
+
+		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
+
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
+
+		let note1: NoteEntity = await Note.loadByTitle('note 1');
+		let note2: NoteEntity = await Note.loadByTitle('note 2');
+
+		expect(note1.share_id).toBe('abcd1234');
+		expect(note2.share_id).toBe('abcd1234');
+
+		await Folder.updateAllShareIds(resourceService(), []);
+
+		note1 = await Note.loadByTitle('note 1');
+		note2 = await Note.loadByTitle('note 2');
+
+		expect(note1.share_id).toBe('');
+		expect(note2.share_id).toBe('');
 	}));
 
 	it('should apply the note share ID to its resources', async () => {
@@ -337,7 +380,7 @@ describe('models/Folder.sharing', () => {
 		]);
 
 		await Folder.save({ id: folder.id, share_id: 'abcd1234' });
-		await Folder.updateAllShareIds(resourceService, []);
+		await Folder.updateAllShareIds(resourceService, makeStateShares(folder.id));
 
 		const folder2: FolderEntity = await Folder.loadByTitle('folder 2');
 		const note1: NoteEntity = await Note.loadByTitle('note 1');
@@ -355,7 +398,7 @@ describe('models/Folder.sharing', () => {
 
 		const previousBlobUpdatedTime = (await Resource.load(resourceId)).blob_updated_time;
 		await msleep(1);
-		await Folder.updateAllShareIds(resourceService, []);
+		await Folder.updateAllShareIds(resourceService, makeStateShares(folder.id));
 
 		{
 			const resource: ResourceEntity = await Resource.load(resourceId);
@@ -366,7 +409,7 @@ describe('models/Folder.sharing', () => {
 		await Note.save({ id: note1.id, parent_id: folder2.id });
 		await resourceService.indexNoteResources();
 
-		await Folder.updateAllShareIds(resourceService, []);
+		await Folder.updateAllShareIds(resourceService, makeStateShares(folder.id));
 
 		{
 			const resource: ResourceEntity = await Resource.load(resourceId);

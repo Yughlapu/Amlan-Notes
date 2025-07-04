@@ -18,9 +18,23 @@ import Setting from '../../models/Setting';
 import { ModelType } from '../../BaseModel';
 import { remoteNotesFoldersResources } from '../../testing/test-utils-synchronizer';
 import mockShareService from '../../testing/share/mockShareService';
+import { StateShare } from './reducer';
+import { Store } from 'redux';
+import { State } from '../../reducer';
+
+const makeStateShares = (folderId: string, shareId = 'abcd1234'): StateShare[] => {
+	return [{
+		folder_id: folderId,
+		master_key_id: '',
+		id: shareId,
+		note_id: '',
+		type: 3,
+	}];
+};
 
 interface TestShareFolderServiceOptions {
 	master_key_id?: string;
+	store?: Store<State>;
 }
 
 const testImagePath = `${supportDir}/photo.jpg`;
@@ -140,7 +154,9 @@ describe('ShareService', () => {
 
 				throw new Error(`Unhandled: ${method} ${path}`);
 			},
-		});
+
+
+		}, null, options.store);
 	}
 
 	const prepareNoteFolderResource = async () => {
@@ -176,18 +192,18 @@ describe('ShareService', () => {
 		const ppk = await generateKeyPair(encryptionService(), '111111');
 		setPpk(ppk);
 
-		let shareService = testShareFolderService();
-
 		expect(await MasterKey.count()).toBe(1);
 
 		let { folder, note, resource } = await prepareNoteFolderResource();
 
+		let shareService = testShareFolderService();
+
 		BaseItem.shareService_ = shareService;
 		Resource.shareService_ = shareService;
 
-		await shareService.shareFolder(folder.id);
+		const share = await shareService.shareFolder(folder.id);
 
-		await Folder.updateAllShareIds(resourceService(), []);
+		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder.id, share.id));
 
 		// The share service should automatically create a new encryption key
 		// specifically for that shared folder
@@ -318,7 +334,7 @@ describe('ShareService', () => {
 		const cleanup = simulateReadOnlyShareEnv('123456789');
 
 		const shareService = testShareFolderService();
-		await shareService.leaveSharedFolder(folder1.id, 'somethingrandom');
+		await shareService.leaveSharedFolder(folder1.id, 'somethingrandom', BaseItem.syncShareCache.shares);
 
 		expect(await Folder.count()).toBe(0);
 		expect(await Note.count()).toBe(0);

@@ -538,19 +538,26 @@ export default class Folder extends BaseItem {
 		logger.debug('updateFolderShareIds:', report);
 	}
 
-	public static async updateNoteShareIds() {
+	public static async updateNoteShareIds(activeShares: StateShare[]) {
 		// Find all the notes where the share_id is not the same as the
 		// parent share_id because we only need to update those.
-		const rows = await this.db().selectAll(`
+		const rows1 = await this.db().selectAll(`
 			SELECT notes.id, folders.share_id, notes.parent_id
 			FROM notes
 			LEFT JOIN folders ON notes.parent_id = folders.id
 			WHERE notes.share_id != folders.share_id
 		`);
 
-		logger.debug('updateNoteShareIds: notes to update:', rows.length);
+		const rows2 = await this.db().selectAll(`
+			SELECT notes.id, notes.parent_id
+			FROM notes
+			WHERE notes.share_id != '' AND notes.share_id NOT IN (${BaseModel.escapeIdsForSql(activeShares.map(s => s.id))})
+		`);
 
-		for (const row of rows) {
+		logger.debug('updateNoteShareIds: notes to update (1)', rows1);
+		logger.debug('updateNoteShareIds: notes to update (2)', rows2);
+
+		for (const row of rows1.concat(rows2)) {
 			await Note.save({
 				id: row.id,
 				share_id: row.share_id || '',
@@ -710,7 +717,7 @@ export default class Folder extends BaseItem {
 
 	public static async updateAllShareIds(resourceService: ResourceService, activeShares: StateShare[]) {
 		await this.updateFolderShareIds(activeShares);
-		await this.updateNoteShareIds();
+		await this.updateNoteShareIds(activeShares);
 		await this.updateResourceShareIds(resourceService);
 	}
 

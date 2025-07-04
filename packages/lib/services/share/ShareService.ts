@@ -206,17 +206,19 @@ export default class ShareService {
 	// If `folderShareUserId` is provided, the function will check that the user
 	// does not own the share. It would be an error to leave such a folder
 	// (instead "unshareFolder" should be called).
-	public async leaveSharedFolder(folderId: string, folderShareUserId: string = null): Promise<void> {
+	public async leaveSharedFolder(folderId: string, folderShareUserId: string = null, stateShares: StateShare[]|null = null): Promise<void> {
 		if (folderShareUserId !== null) {
 			const userId = Setting.value('sync.userId');
 			if (folderShareUserId === userId) throw new Error('Cannot leave own notebook');
 		}
 
+		if (stateShares === null) stateShares = this.shares;
+
 		const folder = await Folder.load(folderId);
 
 		// We call this to make sure all items are correctly linked before we
 		// call deleteAllByShareId()
-		await Folder.updateAllShareIds(ResourceService.instance(), this.shares);
+		await Folder.updateAllShareIds(ResourceService.instance(), stateShares);
 
 		const source = 'ShareService.leaveSharedFolder';
 		await Folder.delete(folderId, { deleteChildren: false, disableReadOnlyCheck: true, sourceDescription: source });
