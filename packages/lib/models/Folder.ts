@@ -484,7 +484,8 @@ export default class Folder extends BaseItem {
 	public static async updateFolderShareIds(activeShares: StateShare[]): Promise<void> {
 		// Get all the sub-folders of the shared folders, and set the share_id
 		// property.
-		const rootFolders = await this.rootSharedFolders(activeShares);
+		const activeShareIds = activeShares.map(s => s.id);
+		const rootFolders = (await this.rootSharedFolders(activeShares)).filter(f => activeShareIds.includes(f.share_id));
 
 		let sharedFolderIds: string[] = [];
 

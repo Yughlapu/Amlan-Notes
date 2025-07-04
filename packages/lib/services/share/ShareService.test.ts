@@ -19,8 +19,6 @@ import { ModelType } from '../../BaseModel';
 import { remoteNotesFoldersResources } from '../../testing/test-utils-synchronizer';
 import mockShareService from '../../testing/share/mockShareService';
 import { StateShare } from './reducer';
-import { Store } from 'redux';
-import { State } from '../../reducer';
 
 const makeStateShares = (folderId: string, shareId = 'abcd1234'): StateShare[] => {
 	return [{
@@ -34,7 +32,6 @@ const makeStateShares = (folderId: string, shareId = 'abcd1234'): StateShare[] =
 
 interface TestShareFolderServiceOptions {
 	master_key_id?: string;
-	store?: Store<State>;
 }
 
 const testImagePath = `${supportDir}/photo.jpg`;
@@ -154,9 +151,7 @@ describe('ShareService', () => {
 
 				throw new Error(`Unhandled: ${method} ${path}`);
 			},
-
-
-		}, null, options.store);
+		});
 	}
 
 	const prepareNoteFolderResource = async () => {
@@ -173,7 +168,7 @@ describe('ShareService', () => {
 
 	async function testShareFolder(service: ShareService) {
 		const { folder, note, resource } = await prepareNoteFolderResource();
-		const share = await service.shareFolder(folder.id);
+		const share = await service.shareFolder(folder.id, makeStateShares(folder.id, 'share_1'));
 		expect(share.id).toBe('share_1');
 		expect((await Folder.load(folder.id)).share_id).toBe('share_1');
 		expect((await Note.load(note.id)).share_id).toBe('share_1');
@@ -192,16 +187,16 @@ describe('ShareService', () => {
 		const ppk = await generateKeyPair(encryptionService(), '111111');
 		setPpk(ppk);
 
+		let shareService = testShareFolderService();
+
 		expect(await MasterKey.count()).toBe(1);
 
 		let { folder, note, resource } = await prepareNoteFolderResource();
 
-		let shareService = testShareFolderService();
-
 		BaseItem.shareService_ = shareService;
 		Resource.shareService_ = shareService;
 
-		const share = await shareService.shareFolder(folder.id);
+		const share = await shareService.shareFolder(folder.id, makeStateShares(folder.id, 'share_1'));
 
 		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder.id, share.id));
 

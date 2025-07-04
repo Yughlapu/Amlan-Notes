@@ -98,7 +98,9 @@ export default class ShareService {
 		return this.api_;
 	}
 
-	public async shareFolder(folderId: string): Promise<ApiShare> {
+	public async shareFolder(folderId: string, stateShares: StateShare[]|null = null): Promise<ApiShare> {
+		if (stateShares === null) stateShares = this.shares;
+
 		const folder = await Folder.load(folderId);
 		if (!folder) throw new Error(`No such folder: ${folderId}`);
 
@@ -137,7 +139,7 @@ export default class ShareService {
 		// Note: race condition if the share is created but the app crashes
 		// before setting share_id on the folder. See unshareFolder() for info.
 		await Folder.save({ id: folder.id, share_id: share.id });
-		await Folder.updateAllShareIds(ResourceService.instance(), this.shares);
+		await Folder.updateAllShareIds(ResourceService.instance(), stateShares);
 
 		return share;
 	}

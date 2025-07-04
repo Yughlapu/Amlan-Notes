@@ -10,14 +10,23 @@ import { StateShare } from '../services/share/reducer';
 
 const testImagePath = `${supportDir}/photo.jpg`;
 
-const makeStateShares = (folderId: string, shareId = 'abcd1234'): StateShare[] => {
-	return [{
-		folder_id: folderId,
-		master_key_id: '',
-		id: shareId,
-		note_id: '',
-		type: 3,
-	}];
+const makeStateShares = (folderIds: string[] | string, shareIds: string|string[] = 'abcd1234'): StateShare[] => {
+	folderIds = (typeof folderIds === 'string') ? [folderIds] : folderIds;
+	shareIds = (typeof shareIds === 'string') ? [shareIds] : shareIds;
+
+	const output: StateShare[] = [];
+
+	for (let i = 0; i < folderIds.length; i++) {
+		output.push({
+			folder_id: folderIds[i],
+			master_key_id: '',
+			id: shareIds[i],
+			note_id: '',
+			type: 3,
+		});
+	}
+
+	return output;
 };
 
 describe('models/Folder.sharing', () => {
@@ -317,10 +326,7 @@ describe('models/Folder.sharing', () => {
 		expect(note2.share_id).toBe('abcd1234');
 	}));
 
-	// TODO: also of folders
-	// TODO: also of resources
-
-	it('should clear the share ID of notes if that share no longer exists', (async () => {
+	it('should clear the share ID if that share no longer exists', (async () => {
 		const folder1 = await createFolderTree('', [
 			{
 				title: 'folder 1',
@@ -331,6 +337,10 @@ describe('models/Folder.sharing', () => {
 					{
 						title: 'note 2',
 					},
+					{
+						title: 'subfolder',
+						children: [],
+					},
 				],
 			},
 			{
@@ -339,23 +349,35 @@ describe('models/Folder.sharing', () => {
 			},
 		]);
 
+		let note1: NoteEntity = await Note.loadByTitle('note 1');
+		await shim.attachFileToNote(note1, testImagePath);
+		await resourceService().indexNoteResources();
+
 		await Folder.save({ id: folder1.id, share_id: 'abcd1234' });
 
 		await Folder.updateAllShareIds(resourceService(), makeStateShares(folder1.id));
 
-		let note1: NoteEntity = await Note.loadByTitle('note 1');
+		note1 = await Note.loadByTitle('note 1');
 		let note2: NoteEntity = await Note.loadByTitle('note 2');
+		let resource: ResourceEntity = (await Resource.all())[0];
+		let subFolder: FolderEntity = await Folder.loadByTitle('subfolder');
 
 		expect(note1.share_id).toBe('abcd1234');
 		expect(note2.share_id).toBe('abcd1234');
+		expect(resource.share_id).toBe('abcd1234');
+		expect(subFolder.share_id).toBe('abcd1234');
 
 		await Folder.updateAllShareIds(resourceService(), []);
 
 		note1 = await Note.loadByTitle('note 1');
 		note2 = await Note.loadByTitle('note 2');
+		resource = (await Resource.all())[0];
+		subFolder = await Folder.loadByTitle('subfolder');
 
 		expect(note1.share_id).toBe('');
 		expect(note2.share_id).toBe('');
+		expect(resource.share_id).toBe('');
+		expect(subFolder.share_id).toBe('');
 	}));
 
 	it('should apply the note share ID to its resources', async () => {
@@ -477,7 +499,7 @@ describe('models/Folder.sharing', () => {
 		// We need to index the resources to populate the note_resources table
 
 		await resourceService.indexNoteResources();
-		await Folder.updateAllShareIds(resourceService, []);
+		await Folder.updateAllShareIds(resourceService, makeStateShares(folder1.id, 'share1'));
 
 		// BEFORE:
 		//
@@ -549,7 +571,7 @@ describe('models/Folder.sharing', () => {
 
 		await resourceService.indexNoteResources();
 
-		await Folder.updateAllShareIds(resourceService, []);
+		await Folder.updateAllShareIds(resourceService, makeStateShares([folder1.id, folder2.id], ['1', '2']));
 
 		await Folder.updateNoLongerSharedItems(['1']);
 
