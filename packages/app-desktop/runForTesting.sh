@@ -182,6 +182,12 @@ do
 	fi
 done
 
+echo '----------------------------------------------------'
+echo 'Running commands:'
+echo '';
+cat "$CMD_FILE"
+echo '----------------------------------------------------'
+
 cd "$ROOT_DIR/packages/app-cli"
 yarn start --profile "$PROFILE_DIR" batch "$CMD_FILE"
 
