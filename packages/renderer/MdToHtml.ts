@@ -145,6 +145,7 @@ interface PluginContext {
 	pluginWasUsed: {
 		mermaid: boolean;
 		katex: boolean;
+		abc: boolean;
 	};
 }
 
@@ -519,6 +520,7 @@ export default class MdToHtml implements MarkupRenderer {
 			pluginWasUsed: {
 				mermaid: false,
 				katex: false,
+				abc: false,
 			},
 		};
 
@@ -655,6 +657,7 @@ export default class MdToHtml implements MarkupRenderer {
 		output.pluginAssets = output.pluginAssets.filter(pa => {
 			if (!context.pluginWasUsed.mermaid && pa.source === 'mermaid') return false;
 			if (!context.pluginWasUsed.katex && pa.source === 'katex') return false;
+			if (!context.pluginWasUsed.abc && pa.source === 'abc') return false;
 			return true;
 		});
 

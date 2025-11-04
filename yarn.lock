@@ -9503,6 +9503,7 @@ __metadata:
     "@joplin/fork-uslug": "npm:^2.0.3"
     "@joplin/utils": "npm:^3.5.1"
     "@types/jest": "npm:29.5.14"
+    "@types/json5": "npm:2.2.0"
     "@types/markdown-it": "npm:13.0.9"
     "@types/node": "npm:18.19.130"
     abcjs: "npm:6.5.2"
@@ -14202,6 +14203,15 @@ __metadata:
   version: 7.0.11
   resolution: "@types/json-schema@npm:7.0.11"
   checksum: 10/e50864a93f4dcb9de64c0c605d836f5416341c824d7a8cde1aa15a5fc68bed44b33cdcb2e04e5098339e9121848378f2d0cc5b124dec41c89203c6f67d6f344a
+  languageName: node
+  linkType: hard
+
+"@types/json5@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@types/json5@npm:2.2.0"
+  dependencies:
+    json5: "npm:*"
+  checksum: 10/a295f489dd53fd075181b9c24d489efc2655d68a80636e5edcb5aa785b0afefe3ac8bb68d613f318e177b4c7a0394690243497d54b1da9ac129ddaa901e28fdb
   languageName: node
   linkType: hard
 
@@ -32853,7 +32863,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json5@npm:2.2.3, json5@npm:^2.2.0, json5@npm:^2.2.2, json5@npm:^2.2.3":
+"json5@npm:*, json5@npm:2.2.3, json5@npm:^2.2.0, json5@npm:^2.2.2, json5@npm:^2.2.3":
   version: 2.2.3
   resolution: "json5@npm:2.2.3"
   bin:

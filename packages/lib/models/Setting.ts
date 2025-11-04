@@ -628,7 +628,10 @@ class Setting extends BaseModel {
 		return this.keys(true).indexOf(key) >= 0;
 	}
 
-	public static async loadOneFromDb(key: string): Promise<CacheItem | null> {
+	// This allows loading a setting without doing any check on anything - this can be useful to
+	// retrieve a value for a setting that was previously registered, but no longer is. Also to
+	// retrieve setting values for plugins before the plugin is actually loaded.
+	private static async loadOneFromDb(key: string): Promise<CacheItem | null> {
 		const row = await this.modelSelectOne('SELECT key, value FROM settings WHERE key = ?', [key]);
 		return row ? row : null;
 	}

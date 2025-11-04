@@ -33,6 +33,7 @@
     "@joplin/fork-htmlparser2": "^4.1.60",
     "@joplin/fork-uslug": "^2.0.3",
     "@joplin/utils": "^3.5.1",
+    "@types/json5": "2.2.0",
     "abcjs": "6.5.2",
     "font-awesome-filetypes": "2.1.0",
     "fs-extra": "11.2.0",

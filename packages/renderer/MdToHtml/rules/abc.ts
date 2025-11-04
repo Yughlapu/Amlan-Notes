@@ -1,8 +1,5 @@
 import type * as MarkdownIt from 'markdown-it';
-const JSON5 = require('json5').default;
-const abcjs = require('abcjs');
-const Entities = require('html-entities').AllHtmlEntities;
-const htmlentities = new Entities().encode;
+import * as JSON5 from 'json5';
 
 interface AbcContent {
 	options: object;
@@ -17,7 +14,7 @@ const parseOptions = (options: string) => {
 		const o = JSON5.parse(options);
 		return o ? o : {};
 	} catch (error) {
-		error.message = `Could not parse options: ${options}: ${error.message}`;
+		error.message = `Could not parse ABC options: ${options}: ${error.message}`;
 		throw error;
 	}
 };
@@ -32,7 +29,20 @@ const parseAbcContent = (content: string): AbcContent => {
 	};
 };
 
-const plugin = (markdownIt: MarkdownIt) => {
+const parseGlobalOptions = (content: string) => {
+	content = content.trim();
+	if (!content) return {};
+
+	try {
+		return JSON5.parse(content);
+	} catch (error) {
+		error.message = `Could not parse global ABC options: ${content}: ${error.message}`;
+		throw error;
+	}
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- we still don't have a type for ruleOptions (and it's not RuleOptions)
+const plugin = (markdownIt: MarkdownIt, ruleOptions: any) => {
 	const defaultRender = markdownIt.renderer.rules.fence || function(tokens, idx, options, env, self) {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Imported from ABC plugin and don't want to change the function signature as I'm not sure if it's a type issue or if env and self really aren't needed
 		return (self.renderToken as any)(tokens, idx, options, env, self);
@@ -43,33 +53,31 @@ const plugin = (markdownIt: MarkdownIt) => {
 		if (token.info !== 'abc') return defaultRender(tokens, idx, options, env, self);
 
 		const elementId = `abc_target_${Math.random()}_${Date.now()}`;
-		const element = document.createElement('div');
 
-		let html = '';
+		const cssClasses = [
+			'joplin-abc-notation',
+		];
+
+		ruleOptions.context.pluginWasUsed.abc = true;
 
 		try {
-			const globalOptions = {}; // TODO: migrate settings //parseOptions(pluginOptions.settingValue('options'));
-
-			element.setAttribute('id', elementId);
-			element.style.display = 'none';
-			document.body.appendChild(element);
 			const parsed = parseAbcContent(token.content);
-			abcjs.renderAbc(elementId, parsed.markup, { ...globalOptions, ...parsed.options });
-			html = `<div class="abc-notation-block">${element.innerHTML}</div>`;
-		} catch (error) {
-			console.error('ABC:', error);
-			return `<div style="border: 1px solid red; padding: 10px;">Could not render ABC notation: ${htmlentities(error.message)}</div>`;
-		} finally {
-			// Remove the element appears to fail when exporting to PDF ("element is not a
-			// child of parent"). So we put this in a try/catch block too.
-			try {
-				document.body.removeChild(element);
-			} catch (error) {
-				console.warn('ABC: Could not remove child element:', error);
-			}
-		}
+			const globalOptions = ruleOptions.globalSettings ? parseGlobalOptions(ruleOptions.globalSettings['markdown.plugin.abc.options']) : {};
+			const contentHtml = markdownIt.utils.escapeHtml(parsed.markup.trim());
+			const optionsHtml = markdownIt.utils.escapeHtml(JSON.stringify({
+				...globalOptions,
+				...parsed.options,
+			}));
 
-		return html;
+			return `
+				<div class="joplin-editable">
+					<pre class="joplin-source" data-joplin-language="abc" data-joplin-source-open="\`\`\`abc&#10;" data-joplin-source-close="&#10;\`\`\`&#10;">${contentHtml}</pre>
+					<pre id="${elementId}" class="${cssClasses.join(' ')}" data-abc-options="${optionsHtml}">${contentHtml}</pre>
+				</div>
+			`;
+		} catch (error) {
+			return `<div class="inline-code">${markdownIt.utils.escapeHtml(error.message)}</div}>`;
+		}
 	};
 };
 
@@ -84,7 +92,18 @@ const assets = () => {
 				}
 			`,
 		},
-	];
+		{
+			name: 'abcjs-basic-min.js',
+		},
+		{
+			name: 'abc_render.js',
+		},
+	].map(e => {
+		return {
+			source: 'abc',
+			...e,
+		};
+	});
 };
 
 export default {
